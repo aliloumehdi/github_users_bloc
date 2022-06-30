@@ -118,10 +118,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:github_users_bloc/bloc/counter.bloc.dart';
-import 'package:github_users_bloc/ui/pages/counter.bloc.page.dart';
-import 'package:github_users_bloc/ui/pages/counter.stateful.page.dart';
-import 'package:github_users_bloc/ui/pages/git.users.page.dart';
-import 'package:github_users_bloc/ui/pages/home.page.dart';
+import 'package:github_users_bloc/bloc/theme.bloc.dart';
 import 'package:github_users_bloc/ui/pages/root.view.dart';
 
 void main(){
@@ -133,7 +130,8 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
 providers: [
-  BlocProvider(create: (context) => CounterBloc(),)
+  BlocProvider(create: (context) => CounterBloc(),),
+  BlocProvider(create: (context) => ThemeBloc())
 ],
 child:const RootView()
     );

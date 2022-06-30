@@ -15,6 +15,7 @@ class MainDrawer extends StatelessWidget {
       { "title":"Counter Stateful","leading": Icons.event,"trailing": Icons.arrow_forward,"route":"/counter1"},
       { "title":"Counter Bloc","leading": Icons.timer,"trailing": Icons.arrow_forward,"route":"/counter2"},
       { "title":"Git users","leading": Icons.person,"trailing": Icons.arrow_forward,"route":"/users"},
+      { "title":"QRCode generator","leading": Icons.qr_code_2_outlined,"trailing": Icons.arrow_forward,"route":"/qrgenerator"}
     ];
     return Drawer(
       child:Column(
@@ -36,7 +37,7 @@ class MainDrawer extends StatelessWidget {
       );
           },
           separatorBuilder: (context, index) {
-            return Divider(height: 6 );
+            return const Divider(height: 6 );
           },
           itemCount: menus.length
       )

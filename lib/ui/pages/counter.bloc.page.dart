@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart'; 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:github_users_bloc/bloc/counter.bloc.dart';
+import 'package:github_users_bloc/ui/themes/themes.dart';
 
 class CounterBlocPage extends StatelessWidget {
   const CounterBlocPage({super.key});
@@ -29,15 +30,14 @@ class CounterBlocPage extends StatelessWidget {
               "Counter value => ${state.counter}",
                 style: Theme.of(context).textTheme.headline5,
               ),
-            Text(
-          "${state.errorMessage}",
-          style: Theme.of(context).textTheme.headline6,
+            Text(state.errorMessage,
+          style:CustomThemes.errorTextStyle
           )
                 ],
               );
             }
            else{
-              return Text("data");
+              return const Text("data");
             }
         }),
       ),
@@ -50,7 +50,7 @@ context.read<CounterBloc>().add(DecrementCounter());
           },child:const Icon(Icons.remove),
           heroTag: "dec",
           ),
-          SizedBox(width: 6,),
+          const SizedBox(width: 6,),
           FloatingActionButton(onPressed: (){
             context.read<CounterBloc>().add(IncrementCounter());
 
