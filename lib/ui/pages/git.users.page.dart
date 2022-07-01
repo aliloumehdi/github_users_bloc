@@ -13,7 +13,22 @@ class GitUsersPage extends StatelessWidget {
     return Scaffold(
 
       appBar: AppBar(
-        title: const Text("Git Users"),
+        title: BlocBuilder<UsersBloc, UsersState>(
+
+          builder:  (context, state) {
+
+            if(state is SearchUsersErrorState)
+              return Row(
+                mainAxisAlignment:  MainAxisAlignment.spaceBetween,
+                children: [
+                  Text("users"),
+                  Text("${state.currentPage}/${state.totalePages}")
+                ],
+              );
+            else
+              return const Text("Users page");
+          },
+        ),
 
       ),
       body: Column(
@@ -36,7 +51,7 @@ class GitUsersPage extends StatelessWidget {
                     ,
                     IconButton(onPressed: () {
                       context.read<UsersBloc>().add(
-                          SearchUsersEvent(currentKeyword: textEditingController.text, currentPage: 0, pageSize: 20,totalePages: 300));
+                          SearchUsersEvent(key: textEditingController.text, currentPage: 0, pageSize: 20,totalePages: 300));
                     }, icon: const Icon(Icons.search))
 
                   ]
@@ -45,58 +60,56 @@ class GitUsersPage extends StatelessWidget {
           BlocBuilder<UsersBloc, UsersState>(builder: (context, state) {
             if (state is SearchUsersIsLoadingState)
               return const Center(
-
                 child: CircularProgressIndicator(),
               );
             else if (state is SearchUsersErrorState) {
               return Column(
                 children: [
                   Text(
-                    state.errorMessage, style: TextStyle(color: Colors.deepOrange),),
+                    state.error, style: TextStyle(color:Theme.of(context).primaryColor),),
                   ElevatedButton(onPressed: () {}, child: const Text('Retry'))
                 ],
               );
             } else if (state is SearchUsersSuccessState) {
               return Expanded(child:LazyLoadScrollView(
-             onEndOfPage: () => {
+                  onEndOfPage: () => {
 
 
-               context.read<UsersBloc>().add(NextPage( currentKeyword: state.currentKeyword, currentPage: state.currentPage+1, pageSize: state.pageSize +1,totalePages: 20 ))
-              // currentKeyword: state.currentKeyword, currentPage: state.currentPage+1, pageSize: state.pageSize +1
+                    context.read<UsersBloc>().add(NextPageEvent(key: state.key, currentPage: state.currentPage+1, pageSize: state.pageSize ,totalePages: state.totalePages ))
 
-              },
-
+                  },
 
 
-               child: ListView.separated(
 
-                  itemBuilder: (context, index)=>ListTile(
-                    title: Row(
-                      children: [
+                  child: ListView.separated(
 
-                        CircleAvatar(
-                          backgroundImage: NetworkImage(state.list[index].avatarUrl) ,
-                          radius : 40,
+                      itemBuilder: (context, index)=>ListTile(
+                        title: Row(
+                          children: [
 
+                            CircleAvatar(
+                              backgroundImage: NetworkImage(state.users[index].avatarUrl) ,
+                              radius : 40,
+
+                            ),
+                            const SizedBox(
+                              width: 5,
+                            ),
+                            Text(state.users[index].login )
+
+                          ],
                         ),
-                        const SizedBox(
-                          width: 5,
-                        ),
-                        Text(state.list[index].login )
-
-                      ],
-                    ),
-                  ) ,
-                  separatorBuilder: (contex,index) =>
-                      Divider(
-                        height: 2,
-                      ),
-                  itemCount: state.list.length)
+                      ) ,
+                      separatorBuilder: (contex,index) =>
+                          Divider(
+                            height: 2,
+                          ),
+                      itemCount: state.users.length)
               )
               );
             }else{
               return Container(
-                color: Colors.deepOrange,
+                color: Theme.of(context).primaryColor,
               );
             }
           })

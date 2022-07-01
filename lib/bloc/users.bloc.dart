@@ -8,50 +8,57 @@ class SearchUsersEvent extends UsersEvent{
   final int currentPage;
   final int totalePages;
   final int pageSize;
-  final String currentKeyword;
-  SearchUsersEvent({required this.currentKeyword,required this.currentPage, required this.pageSize, required this.totalePages});
+  final String key;
+
+
+  SearchUsersEvent({required  this.key,required this.currentPage, required this.pageSize, required this.totalePages});
 
 
 }
 
-class NextPage extends SearchUsersEvent {
-  NextPage({required super.currentKeyword, required super.currentPage, required super.pageSize, required super.totalePages});
-  // NextPage({required super.key, required super.currentPage, required super.pageSize});
+class NextPageEvent extends SearchUsersEvent {
+  NextPageEvent({required String key, required int currentPage, required int pageSize,required int totalePages}) : super(key : key,currentPage:  currentPage, pageSize: pageSize,totalePages : totalePages);
 }
 abstract class UsersState{
 
-  final List<User> list;
+  final List<User> users;
   final int currentPage;
   final int totalePages;
   final int pageSize;
-  final String currentKeyword;
+  final String key;
 
-  UsersState({required this.currentKeyword,required this.list, required this.currentPage , required this.totalePages,required this.pageSize});
-
-}
- class SearchUsersSuccessState extends UsersState {
-  SearchUsersSuccessState({required super.currentKeyword, required super.list, required super.currentPage, required super.totalePages, required super.pageSize});
-
-
-
+  UsersState({required this.key,required this.users, required this.currentPage , required this.totalePages,required this.pageSize});
 
 }
- class SearchUsersIsLoadingState extends UsersState{
-  SearchUsersIsLoadingState({required super.currentKeyword, required super.list, required super.currentPage, required super.totalePages, required super.pageSize});
-
- }
- class SearchUsersErrorState extends UsersState{
-
-
-   final String errorMessage;
-
-  SearchUsersErrorState({required super.currentKeyword, required super.list, required super.currentPage, required super.totalePages, required super.pageSize,required this.errorMessage});
+class SearchUsersSuccessState extends UsersState {
+  SearchUsersSuccessState({required super.key, required super.users, required super.currentPage, required super.totalePages, required super.pageSize});
 
 
 
- }
- class UsersInitialState extends UsersState{
-  UsersInitialState():super(currentPage: 0,list: [],totalePages: 0,pageSize: 20,currentKeyword: "");
+
+
+}
+class SearchUsersIsLoadingState extends UsersState{
+  SearchUsersIsLoadingState({required super.key, required super.users, required super.currentPage, required super.totalePages, required super.pageSize});
+
+
+
+}
+class SearchUsersErrorState extends UsersState{
+
+
+  final String error;
+
+  SearchUsersErrorState({required super.key, required super.users, required super.currentPage, required super.totalePages, required super.pageSize, required this.error});
+
+
+
+
+}
+class UsersInitialState extends UsersState{
+  UsersInitialState() : super(key: "", users: [],currentPage: 0,totalePages:  0,pageSize: 20);
+
+
 
 }
 
@@ -60,38 +67,63 @@ class UsersBloc extends Bloc<UsersEvent,UsersState >{
   UsersRepository usersRepository = UsersRepository();
 
 
-UsersBloc() : super(UsersInitialState()){
+  UsersBloc() : super(UsersInitialState()){
 
-  
-  on((SearchUsersEvent event, emit)async{
-    // emit(SearchUsersIsLoadingState(
 
-    // ));
-   try{
-     ListUsers listeUsers = await usersRepository.searchUsers(event.currentKeyword, event.currentPage, event.pageSize);
-     int totalPage = (listeUsers.totalCount / event.pageSize).floor();
-     List<User> currentList=[...state.list];
-     state.list.addAll(currentList);
-     if(listeUsers.totalCount % event.pageSize !=0 )
-       totalPage = totalPage+1;
-     emit(SearchUsersSuccessState(currentKeyword : event.currentKeyword,list : currentList, currentPage: event.currentPage,totalePages : totalPage ,pageSize : event.pageSize));
-   } catch(ex) {
-     emit(SearchUsersErrorState(
-        currentKeyword: state.currentKeyword,
-        pageSize: state.pageSize,
-        totalePages: state.totalePages,
-        currentPage: state.currentPage,
-        list: state.list,
-         errorMessage : ex.toString()));
-   }
-  });
+    on((SearchUsersEvent event, emit)async{
+      emit(SearchUsersIsLoadingState(
+          key : state.key,
+          users : state.users,
+          currentPage: state.currentPage,
+          totalePages : state.totalePages ,
+          pageSize : state.pageSize
+      ));
+      try{
+        ListUsers listeUsers = await usersRepository.searchUsers(event.key, event.currentPage, event.pageSize);
+        int totalPage = (listeUsers.totalCount / event.pageSize).floor();
+        if(listeUsers.totalCount % event.pageSize !=0 )
+          totalPage = totalPage+1;
+        emit(SearchUsersSuccessState(
+            key : event.key,
+            users : listeUsers.items,
+            currentPage: event.currentPage,
+            totalePages : totalPage ,
+            pageSize : event.pageSize
+        ));
+      } catch(ex) {
+        emit(SearchUsersErrorState( key : event.key,
+            users : state.users,
+            currentPage: event.currentPage,
+            totalePages : state.totalePages ,
+            pageSize : event.pageSize,error : ex.toString()));
+      }
+    });
 
- }
+    on((NextPageEvent event, emit)async{
+
+      try{
+        ListUsers listeUsers = await usersRepository.searchUsers(event.key, event.currentPage, event.pageSize);
+        int totalPage = (listeUsers.totalCount / event.pageSize).floor();
+        if(listeUsers.totalCount % event.pageSize !=0 )
+          totalPage = totalPage+1;
+
+        List<User> currentList = [...state.users];
+
+        state.users.addAll(listeUsers.items);
+        emit(SearchUsersSuccessState(
+            key : event.key,
+            users : currentList,
+            currentPage: event.currentPage,
+            totalePages : totalPage ,
+            pageSize : event.pageSize
+        ));
+      } catch(ex) {
+        emit(SearchUsersErrorState( key : event.key,
+            users : state.users,
+            currentPage: event.currentPage,
+            totalePages : state.totalePages ,
+            pageSize : event.pageSize,error : ex.toString()));
+      }
+    });
+  }
 }
-
-
-
-
-
-
-
