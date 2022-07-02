@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:github_users_bloc/bloc/users.bloc.dart';
+import 'package:github_users_bloc/ui/pages/repositories.page.dart';
 import 'package:lazy_load_scrollview/lazy_load_scrollview.dart';
 
 class GitUsersPage extends StatelessWidget {
@@ -84,6 +85,13 @@ class GitUsersPage extends StatelessWidget {
                   child: ListView.separated(
 
                       itemBuilder: (context, index)=>ListTile(
+                        onTap:() {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => GitRepositoriesPage(
+                                      state.users[index].login,state.users[index].avatarUrl)));
+                        },
                         title: Row(
                           children: [
 
